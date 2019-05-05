@@ -193,7 +193,81 @@ class UserController extends Controller
         }  
     }
     
+    public function updateprofilepic(Request $request)
+    {
+        $user_id = Auth::user()->id;
+        $old_profile_image=Auth::user()->profile_image;
+        $rules = [
+                'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+            ];
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            $response['success']  = false;
+            $response['message'] = $validator->messages();
+            return $response;
+        }
+        if ($request->has('profile_image')) {
+            if (!file_exists( public_path('/profilepics'))) {
+                mkdir(public_path('/profilepics'), 0777, true);
+            }
+            $image = $request->file('profile_image');         
+            $file_extension = $image->getClientOriginalExtension();
+            $rand_number = rand(100000, 999999);
+            $imagename = $rand_number.time().'.'.$image->getClientOriginalExtension();
+            $destinationPath = public_path('/profilepics');
+            $image->move($destinationPath, $imagename);
+            if(file_exists(public_path('/profilepics/'.$old_profile_image)) && $old_profile_image!="")
+            {
+                unlink(public_path('/profilepics/'.$old_profile_image));
+            }
+            $userobj=User::where("id","=",$user_id)->first();
+            $userobj->profile_image=$imagename;
+            if($userobj->save()){
+            $response['success']  = "success";
+            $response['new_pic']  = $imagename;
+            $response['old_pic']  = $old_profile_image;
+            $response['response'] = 'successfully updated';
+            return $response;               
+            }
+        }
+    }
 
+    public function changepassword(Request $request)
+    {
+        $user_id=Auth::user()->id;
+        $rules= [
+            'old_password' => 'required',
+            'password'  => 'required|min:6|confirmed',
+        ];
+         $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            $response['success']  = false;
+            $response['message'] = $validator->messages();
+            return $response;
+        }
+         $userobj=User::where("id","=",$user_id)->first();
+        if (Hash::check($request->old_password, $userobj->password)) { 
+           $userobj->password=Hash::make($request->password);
+           $userobj->save();
+           $response['success']  = "success";
+           $response['response'] = 'successfully changed';
+            return $response; 
+        } else {
+           $response['success']  = false;
+           $response['response'] = 'Old password does not match!';
+           return $response; 
+        }
+    }
+
+    public function logoutApi()
+    { 
+        if (Auth::check()) {
+        Auth::user()->AauthAcessToken()->delete();
+        }
+        $response['success']  = "success";
+        $response['response'] = 'successfully loggedout';
+       return $response; 
+    }
     public function facebookLogin(Request $request){
         $rules = [
                     

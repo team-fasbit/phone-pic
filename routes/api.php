@@ -25,6 +25,9 @@ Route::group(['namespace' => 'Api\Auth'], function() {
 	//Route::post('facebook-login', 'UserController@facebookLogin');
 	Route::group(['middleware' => ['auth:api']], function() {
 		Route::get('get-profile', 'UserController@getProfile');
+		Route::post('updateprofilepic', 'UserController@updateprofilepic');
+		Route::post('changepassword', 'UserController@changepassword');	
+		Route::get('logout', 'UserController@logoutApi');	
 	});
 });
 
