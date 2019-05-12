@@ -77,7 +77,7 @@ class ApiController extends Controller
     }
 
     public function getalljobs(Request $request){
-        $newsfeeds = Job::orderBy("updated_at","DESC")->with("images","ownerinfo")->paginate(20);
+        $newsfeeds = Job::where("user_id","=",Auth::id())->orderBy("updated_at","DESC")->with("images","ownerinfo")->paginate(20);
         $response['success'] = true;
         $response['response'] =  $newsfeeds;
         return $response;

@@ -46,6 +46,14 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
+      //  echo "hiii"; die; 
+        if ($exception instanceof \Illuminate\Auth\AuthenticationException) {
+            return response()->json([
+                 'success' => false,
+                 'message' => $exception->getMessage()
+            ], 401);
+        }
+
         return parent::render($request, $exception);
     }
 }
